@@ -20,7 +20,7 @@ public class MenuActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setTheme(android.R.style.Theme_Holo_NoActionBar_TranslucentDecor);
+        //setTheme(android.R.style.Theme_Holo_NoActionBar_TranslucentDecor);
         setContentView(R.layout.activity_menu);
 
         back = findViewById(R.id.back_btn);

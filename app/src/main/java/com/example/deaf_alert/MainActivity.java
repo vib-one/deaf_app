@@ -23,13 +23,14 @@ public class MainActivity extends AppCompatActivity {
     private Button btn_4;
     private Button btn_5;
     private Button menu;
+    private Button translate_btn;
 
     private RequestPermissionHandler mRequestPermissionHandler;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setTheme(android.R.style.Theme_Holo_NoActionBar_TranslucentDecor);
+        //setTheme(android.R.style.Theme_Holo_NoActionBar_TranslucentDecor);
         setContentView(R.layout.activity_main);
 
         mRequestPermissionHandler = new RequestPermissionHandler();
@@ -42,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
         btn_4 = findViewById(R.id.btn_4);
         btn_5 = findViewById(R.id.btn_5);
         menu = findViewById(R.id.menu);
+        translate_btn = findViewById(R.id.translate_btn);
 
         checkStatusService();
         viewIcons();
@@ -101,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
         btn_1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(MyService.isrunning){
+                if(MyService.isAudioAlertThreadRunning){
                     tryb1 = 1;
                     //tryb1txt = String.valueOf(tryb1);
                     //Context context = getApplicationContext();
@@ -115,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
         btn_2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(MyService.isrunning){
+                if(MyService.isAudioAlertThreadRunning){
                     tryb1 = 2;
                     //tryb1txt = String.valueOf(tryb1);
                     //Context context = getApplicationContext();
@@ -129,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
         btn_3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(MyService.isrunning){
+                if(MyService.isAudioAlertThreadRunning){
                     tryb1 = 3;
                     //tryb1txt = String.valueOf(tryb1);
                     //Context context = getApplicationContext();
@@ -143,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
         btn_4.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(MyService.isrunning){
+                if(MyService.isAudioAlertThreadRunning){
                     tryb1 = 4;
                     //tryb1txt = String.valueOf(tryb1);
                     //Context context = getApplicationContext();
@@ -157,7 +159,7 @@ public class MainActivity extends AppCompatActivity {
         btn_5.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(MyService.isrunning){
+                if(MyService.isAudioAlertThreadRunning){
                     tryb1 = 5;
                     //tryb1txt = String.valueOf(tryb1);
                     //Context context = getApplicationContext();
@@ -172,6 +174,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent menuIntent = new Intent(MainActivity.this, MenuActivity.class);
+                startActivity(menuIntent);
+            }
+        });
+        translate_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent menuIntent = new Intent(MainActivity.this, TranslateActivity.class);
                 startActivity(menuIntent);
             }
         });
@@ -202,9 +211,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void checkStatusService(){
-        if(MyService.isrunning){
+        if(MyService.isAudioAlertThreadRunning){
             is_ON=true;
-            tryb1=MyService.tryb;
+            tryb1=MyService.workingMode;
 
             on_off_btn.setBackgroundResource(R.drawable.poweron);
 

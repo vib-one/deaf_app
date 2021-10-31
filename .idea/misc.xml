@@ -3,8 +3,12 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
-        <entry key="..\:/Users/Zych/.android/deaf_alert/app/src/main/res/layout/activity_main.xml" value="0.1272644927536232" />
+        <entry key="..\:/Users/Zych/.android/deaf_alert/app/src/main/res/drawable/ic_mic_black_24dp.xml" value="0.16495726495726495" />
+        <entry key="..\:/Users/Zych/.android/deaf_alert/app/src/main/res/drawable/ic_mic_black_off.xml" value="0.16495726495726495" />
+        <entry key="..\:/Users/Zych/.android/deaf_alert/app/src/main/res/layout/activity_main.xml" value="0.1" />
         <entry key="..\:/Users/Zych/.android/deaf_alert/app/src/main/res/layout/activity_menu.xml" value="0.1272644927536232" />
+        <entry key="..\:/Users/Zych/.android/deaf_alert/app/src/main/res/layout/activity_translate.xml" value="0.10778985507246377" />
+        <entry key="..\:/Users/Zych/.android/deaf_alert/app/src/main/res/layout/settings_activity.xml" value="0.10778985507246377" />
       </map>
     </option>
   </component>
