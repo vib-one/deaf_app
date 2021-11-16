@@ -26,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
     private Button btn_5;
     private Button menu;
     private Button btnTranslateActivity;
-    private AudioManager mAudioManager;
+
 
 
 
@@ -56,11 +56,6 @@ public class MainActivity extends AppCompatActivity {
 
     public void onResume() {
         super.onResume();
-
-        mAudioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
-        mAudioManager.setBluetoothScoOn(true);
-        mAudioManager.setMode(AudioManager.MODE_NORMAL);
-        mAudioManager.startBluetoothSco();
 
         checkStatusService();
         viewIcons();
@@ -199,8 +194,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onPause(){
         super.onPause();
-        mAudioManager.stopBluetoothSco();
-        mAudioManager.setBluetoothScoOn(false);
+
         finish();
 
     }

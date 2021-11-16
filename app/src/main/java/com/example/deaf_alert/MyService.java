@@ -40,6 +40,7 @@ public class MyService extends Service {
     private final int vib_DELAY = 500;
     // --Commented out by Inspection (2018-05-31 11:00):private int czulosc = 0;
     private boolean isrecording = false;
+    private AudioManager mAudioManager;
 
     public MyService() {
     }
@@ -52,7 +53,7 @@ public class MyService extends Service {
         try {
             minbufferSize = AudioRecord
                     .getMinBufferSize(sampleRate, AudioFormat.CHANNEL_IN_MONO,
-                            AudioFormat.ENCODING_PCM_16BIT);
+                            AudioFormat.ENCODING_PCM_8BIT);
         } catch (Exception e) {
             android.util.Log.e("TrackingFlow", "Exception", e);
         }
@@ -78,6 +79,12 @@ public class MyService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         //Toast.makeText(this,"vib one uruchomiono",Toast.LENGTH_LONG).show();
+
+        mAudioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
+        mAudioManager.setBluetoothScoOn(true);
+        mAudioManager.setMode(AudioManager.MODE_NORMAL);
+        mAudioManager.startBluetoothSco();
+
 
         //odczytuję wartość czułości z activity
         String trybtxt = intent.getStringExtra("message");
@@ -121,6 +128,8 @@ public class MyService extends Service {
         }
         stoptestThread();
         stopRecording();
+        mAudioManager.stopBluetoothSco();
+        mAudioManager.setBluetoothScoOn(false);
         //koniec blokady przejścia CPU w tryb uspienia
     }
 
