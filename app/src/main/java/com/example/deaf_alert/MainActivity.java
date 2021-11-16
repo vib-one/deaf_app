@@ -2,6 +2,8 @@ package com.example.deaf_alert;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.media.AudioManager;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -23,14 +25,17 @@ public class MainActivity extends AppCompatActivity {
     private Button btn_4;
     private Button btn_5;
     private Button menu;
-    private Button translate_btn;
+    private Button btnTranslateActivity;
+    private AudioManager mAudioManager;
+
+
 
     private RequestPermissionHandler mRequestPermissionHandler;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //setTheme(android.R.style.Theme_Holo_NoActionBar_TranslucentDecor);
+        setTheme(android.R.style.Theme_Holo_NoActionBar_TranslucentDecor);
         setContentView(R.layout.activity_main);
 
         mRequestPermissionHandler = new RequestPermissionHandler();
@@ -43,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
         btn_4 = findViewById(R.id.btn_4);
         btn_5 = findViewById(R.id.btn_5);
         menu = findViewById(R.id.menu);
-        translate_btn = findViewById(R.id.translate_btn);
+        btnTranslateActivity= findViewById(R.id.translate_btn);
 
         checkStatusService();
         viewIcons();
@@ -51,6 +56,11 @@ public class MainActivity extends AppCompatActivity {
 
     public void onResume() {
         super.onResume();
+
+        mAudioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
+        mAudioManager.setBluetoothScoOn(true);
+        mAudioManager.setMode(AudioManager.MODE_NORMAL);
+        mAudioManager.startBluetoothSco();
 
         checkStatusService();
         viewIcons();
@@ -103,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
         btn_1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(MyService.isAudioAlertThreadRunning){
+                if(MyService.isrunning){
                     tryb1 = 1;
                     //tryb1txt = String.valueOf(tryb1);
                     //Context context = getApplicationContext();
@@ -117,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
         btn_2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(MyService.isAudioAlertThreadRunning){
+                if(MyService.isrunning){
                     tryb1 = 2;
                     //tryb1txt = String.valueOf(tryb1);
                     //Context context = getApplicationContext();
@@ -131,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
         btn_3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(MyService.isAudioAlertThreadRunning){
+                if(MyService.isrunning){
                     tryb1 = 3;
                     //tryb1txt = String.valueOf(tryb1);
                     //Context context = getApplicationContext();
@@ -145,7 +155,7 @@ public class MainActivity extends AppCompatActivity {
         btn_4.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(MyService.isAudioAlertThreadRunning){
+                if(MyService.isrunning){
                     tryb1 = 4;
                     //tryb1txt = String.valueOf(tryb1);
                     //Context context = getApplicationContext();
@@ -159,7 +169,7 @@ public class MainActivity extends AppCompatActivity {
         btn_5.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(MyService.isAudioAlertThreadRunning){
+                if(MyService.isrunning){
                     tryb1 = 5;
                     //tryb1txt = String.valueOf(tryb1);
                     //Context context = getApplicationContext();
@@ -177,7 +187,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(menuIntent);
             }
         });
-        translate_btn.setOnClickListener(new View.OnClickListener() {
+        btnTranslateActivity.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent menuIntent = new Intent(MainActivity.this, TranslateActivity.class);
@@ -189,7 +199,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onPause(){
         super.onPause();
+        mAudioManager.stopBluetoothSco();
+        mAudioManager.setBluetoothScoOn(false);
         finish();
+
     }
 
     private void Start_Service() {
@@ -211,9 +224,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void checkStatusService(){
-        if(MyService.isAudioAlertThreadRunning){
+        if(MyService.isrunning){
             is_ON=true;
-            tryb1=MyService.workingMode;
+            tryb1=MyService.tryb;
 
             on_off_btn.setBackgroundResource(R.drawable.poweron);
 
@@ -293,5 +306,7 @@ public class MainActivity extends AppCompatActivity {
         mRequestPermissionHandler.onRequestPermissionsResult(requestCode, permissions,
                 grantResults);
     }
+
+
 }
 
