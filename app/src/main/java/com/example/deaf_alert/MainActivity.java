@@ -3,7 +3,6 @@ package com.example.deaf_alert;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.media.AudioManager;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -13,12 +12,13 @@ import android.content.Context;
 import android.content.Intent;
 
 
-public class MainActivity extends AppCompatActivity {
+
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private boolean is_ON=false;
     private boolean permission=false;
     private int tryb1=0;
-    private Button on_off_btn;
+    private Button onOffBtn;
     private Button btn_1;
     private Button btn_2;
     private Button btn_3;
@@ -41,7 +41,8 @@ public class MainActivity extends AppCompatActivity {
         mRequestPermissionHandler = new RequestPermissionHandler();
         permissionCheck();
 
-        on_off_btn = findViewById(R.id.on_off_btn);
+        onOffBtn = findViewById(R.id.onOffBtn);
+        onOffBtn.setOnClickListener(this);
         btn_1 = findViewById(R.id.btn_1);
         btn_2 = findViewById(R.id.btn_2);
         btn_3 = findViewById(R.id.btn_3);
@@ -78,33 +79,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         */
-        on_off_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
 
-                if (!permission){
-
-                    Context context = getApplicationContext();
-                    Toast.makeText(context,"Nie udzielono zezwolenia na nagrywanie",Toast.LENGTH_SHORT).show();
-
-                }
-
-                if (!is_ON & permission){
-                    tryb1=3;
-                    on_off_btn.setBackgroundResource(R.drawable.poweron);
-                    viewIcons();
-                    //Context context = getApplicationContext();
-                    //Toast.makeText(context,"vib one- uruchomiono",Toast.LENGTH_SHORT).show();
-                    Start_Service();
-                }
-                else{
-                    tryb1 = 0;
-                    on_off_btn.setBackgroundResource(R.drawable.poweroff);
-                    viewIcons();
-                    Stop_Service();
-                }
-            }
-        });
         btn_1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -222,11 +197,11 @@ public class MainActivity extends AppCompatActivity {
             is_ON=true;
             tryb1=MyService.tryb;
 
-            on_off_btn.setBackgroundResource(R.drawable.poweron);
+            onOffBtn.setBackgroundResource(R.drawable.poweron);
 
         }else{
             is_ON=false;
-            on_off_btn.setBackgroundResource(R.drawable.poweroff);
+            onOffBtn.setBackgroundResource(R.drawable.poweroff);
         }
     }
     private void viewIcons(){
@@ -302,5 +277,41 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.onOffBtn:
+                if (!permission){
+
+                    Context context = getApplicationContext();
+                    Toast.makeText(context,"Nie udzielono zezwolenia na nagrywanie",Toast.LENGTH_SHORT).show();
+                }
+
+                if (!is_ON & permission){
+                    tryb1=3;
+                    onOffBtn.setBackgroundResource(R.drawable.poweron);
+                    viewIcons();
+                    //Context context = getApplicationContext();
+                    //Toast.makeText(context,"vib one- uruchomiono",Toast.LENGTH_SHORT).show();
+                    Start_Service();
+                }
+                else{
+                    tryb1 = 0;
+                    onOffBtn.setBackgroundResource(R.drawable.poweroff);
+                    viewIcons();
+                    Stop_Service();
+                }
+                break;
+            case R.id.btn_1:
+                // do your code
+                break;
+            case R.id.btn_2:
+                // do your code
+                break;
+            default:
+                break;
+        }
+
+    }
 }
 
