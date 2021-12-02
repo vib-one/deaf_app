@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setTheme(android.R.style.Theme_Holo_NoActionBar_TranslucentDecor);
+        setTheme(android.R.style.Theme_Black_NoTitleBar_Fullscreen);
         setContentView(R.layout.activity_main);
 
         mRequestPermissionHandler = new RequestPermissionHandler();
@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btn_3 = findViewById(R.id.btn_3);
         btn_4 = findViewById(R.id.btn_4);
         btn_5 = findViewById(R.id.btn_5);
-        menu = findViewById(R.id.menu);
+        menu = findViewById(R.id.menuBtn);
         btnTranslateActivity= findViewById(R.id.translate_btn);
 
         checkStatusService();
@@ -197,11 +197,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             is_ON=true;
             tryb1=MyService.tryb;
 
-            onOffBtn.setBackgroundResource(R.drawable.poweron);
+            //onOffBtn.setBackgroundResource(R.drawable.poweron);
 
         }else{
             is_ON=false;
-            onOffBtn.setBackgroundResource(R.drawable.poweroff);
+            //onOffBtn.setBackgroundResource(R.drawable.poweroff);
         }
     }
     private void viewIcons(){
@@ -289,7 +289,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                 if (!is_ON & permission){
                     tryb1=3;
-                    onOffBtn.setBackgroundResource(R.drawable.poweron);
+                    //onOffBtn.setBackgroundResource(R.drawable.poweron);
                     viewIcons();
                     //Context context = getApplicationContext();
                     //Toast.makeText(context,"vib one- uruchomiono",Toast.LENGTH_SHORT).show();
@@ -297,7 +297,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 else{
                     tryb1 = 0;
-                    onOffBtn.setBackgroundResource(R.drawable.poweroff);
+                    //onOffBtn.setBackgroundResource(R.drawable.poweroff);
                     viewIcons();
                     Stop_Service();
                 }
