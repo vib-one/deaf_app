@@ -18,18 +18,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private boolean is_ON=false;
     private boolean permission=false;
     private int tryb1=0;
-    private Button onOffBtn;
-    private Button btn_1;
-    private Button btn_2;
+    private Button onOffButton;
+    private Button noiseLevelButton;
+    private Button youtubeButton;
     private Button btn_3;
     private Button btn_4;
     private Button btn_5;
-    private Button menu;
-    private Button btnTranslateActivity;
-
-
-
-
+    private Button menuButton;
+    private Button recordButton;
     private RequestPermissionHandler mRequestPermissionHandler;
 
     @Override
@@ -41,25 +37,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mRequestPermissionHandler = new RequestPermissionHandler();
         permissionCheck();
 
-        onOffBtn = findViewById(R.id.onOffBtn);
-        onOffBtn.setOnClickListener(this);
-        btn_1 = findViewById(R.id.btn_1);
-        btn_2 = findViewById(R.id.btn_2);
-        btn_3 = findViewById(R.id.btn_3);
-        btn_4 = findViewById(R.id.btn_4);
-        btn_5 = findViewById(R.id.btn_5);
-        menu = findViewById(R.id.menuBtn);
-        btnTranslateActivity= findViewById(R.id.translate_btn);
+        onOffButton = findViewById(R.id.onOffButton);
+        onOffButton.setOnClickListener(this);
+        noiseLevelButton = findViewById(R.id.noiseLevelButton);
+        noiseLevelButton.setOnClickListener(this);
+        youtubeButton = findViewById(R.id.youtubeButton);
+        youtubeButton.setOnClickListener(this);
+        menuButton = findViewById(R.id.menuButton);
+        menuButton.setOnClickListener(this);
+        recordButton = findViewById(R.id.recordButton);
+        recordButton.setOnClickListener(this);
 
         checkStatusService();
-        viewIcons();
+        //viewIcons();
     }
 
     public void onResume() {
         super.onResume();
 
         checkStatusService();
-        viewIcons();
+        //viewIcons();
 /*
         ToggleButton ON_OFF_toggle = (ToggleButton) findViewById(R.id.ON_OFF_btn);
         ON_OFF_toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -78,23 +75,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             }
         });
-        */
-
-        btn_1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(MyService.isrunning){
-                    tryb1 = 1;
-                    //tryb1txt = String.valueOf(tryb1);
-                    //Context context = getApplicationContext();
-                    //Toast.makeText(context,"Tryb 1",Toast.LENGTH_SHORT).show();
-                    Start_Service();
-                    //checkStatusService();
-                    viewIcons();
-                }
-            }
-        });
-        btn_2.setOnClickListener(new View.OnClickListener() {
+        youtubeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if(MyService.isrunning){
@@ -102,68 +83,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     //tryb1txt = String.valueOf(tryb1);
                     //Context context = getApplicationContext();
                     //Toast.makeText(context,"Tryb 2",Toast.LENGTH_SHORT).show();
-                    Start_Service();
                     //checkStatusService();
-                    viewIcons();
                 }
             }
         });
-        btn_3.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(MyService.isrunning){
-                    tryb1 = 3;
-                    //tryb1txt = String.valueOf(tryb1);
-                    //Context context = getApplicationContext();
-                    //Toast.makeText(context,"Tryb 3",Toast.LENGTH_SHORT).show();
-                    Start_Service();
-                    //checkStatusService();
-                    viewIcons();
-                }
-            }
-        });
-        btn_4.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(MyService.isrunning){
-                    tryb1 = 4;
-                    //tryb1txt = String.valueOf(tryb1);
-                    //Context context = getApplicationContext();
-                    //Toast.makeText(context,"Tryb 4",Toast.LENGTH_SHORT).show();
-                    Start_Service();
-                    //checkStatusService();
-                    viewIcons();
-                }
-            }
-        });
-        btn_5.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(MyService.isrunning){
-                    tryb1 = 5;
-                    //tryb1txt = String.valueOf(tryb1);
-                    //Context context = getApplicationContext();
-                    //Toast.makeText(context,"Tryb 5",Toast.LENGTH_SHORT).show();
-                    Start_Service();
-                    //checkStatusService();
-                    viewIcons();
-                }
-            }
-        });
-        menu.setOnClickListener(new View.OnClickListener() {
+        menuButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent menuIntent = new Intent(MainActivity.this, MenuActivity.class);
                 startActivity(menuIntent);
             }
         });
-        btnTranslateActivity.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent menuIntent = new Intent(MainActivity.this, TranslateActivity.class);
-                startActivity(menuIntent);
-            }
-        });
+        */
     }
 
     @Override
@@ -204,51 +135,51 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             //onOffBtn.setBackgroundResource(R.drawable.poweroff);
         }
     }
-    private void viewIcons(){
+ /*   private void viewIcons(){
         if (tryb1==1){
-            btn_1.setBackgroundResource(R.drawable.on1);
-            btn_2.setBackgroundResource(R.drawable.off2);
+            noiseLevelButton.setBackgroundResource(R.drawable.on1);
+            youtubeButton.setBackgroundResource(R.drawable.off2);
             btn_3.setBackgroundResource(R.drawable.off3);
             btn_4.setBackgroundResource(R.drawable.off4);
             btn_5.setBackgroundResource(R.drawable.off5);
         }
         else if (tryb1==2){
-            btn_1.setBackgroundResource(R.drawable.off1);
-            btn_2.setBackgroundResource(R.drawable.on2);
+            noiseLevelButton.setBackgroundResource(R.drawable.off1);
+            youtubeButton.setBackgroundResource(R.drawable.on2);
             btn_3.setBackgroundResource(R.drawable.off3);
             btn_4.setBackgroundResource(R.drawable.off4);
             btn_5.setBackgroundResource(R.drawable.off5);
         }
         else if (tryb1==3){
-            btn_1.setBackgroundResource(R.drawable.off1);
-            btn_2.setBackgroundResource(R.drawable.off2);
+            noiseLevelButton.setBackgroundResource(R.drawable.off1);
+            youtubeButton.setBackgroundResource(R.drawable.off2);
             btn_3.setBackgroundResource(R.drawable.on3);
             btn_4.setBackgroundResource(R.drawable.off4);
             btn_5.setBackgroundResource(R.drawable.off5);
         }
         else if (tryb1==4){
-            btn_1.setBackgroundResource(R.drawable.off1);
-            btn_2.setBackgroundResource(R.drawable.off2);
+            noiseLevelButton.setBackgroundResource(R.drawable.off1);
+            youtubeButton.setBackgroundResource(R.drawable.off2);
             btn_3.setBackgroundResource(R.drawable.off3);
             btn_4.setBackgroundResource(R.drawable.on4);
             btn_5.setBackgroundResource(R.drawable.off5);
         }
         else if (tryb1==5){
-            btn_1.setBackgroundResource(R.drawable.off1);
-            btn_2.setBackgroundResource(R.drawable.off2);
+            noiseLevelButton.setBackgroundResource(R.drawable.off1);
+            youtubeButton.setBackgroundResource(R.drawable.off2);
             btn_3.setBackgroundResource(R.drawable.off3);
             btn_4.setBackgroundResource(R.drawable.off4);
             btn_5.setBackgroundResource(R.drawable.on5);
         }
         else{
-            btn_1.setBackgroundResource(R.drawable.off1);
-            btn_2.setBackgroundResource(R.drawable.off2);
+            noiseLevelButton.setBackgroundResource(R.drawable.off1);
+            youtubeButton.setBackgroundResource(R.drawable.off2);
             btn_3.setBackgroundResource(R.drawable.off3);
             btn_4.setBackgroundResource(R.drawable.off4);
             btn_5.setBackgroundResource(R.drawable.off5);
         }
     }
-
+*/
     private void permissionCheck(){
         mRequestPermissionHandler.requestPermission(this, new String[] {
                 Manifest.permission.RECORD_AUDIO
@@ -280,33 +211,35 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.onOffBtn:
+            case R.id.onOffButton:
                 if (!permission){
-
                     Context context = getApplicationContext();
                     Toast.makeText(context,"Nie udzielono zezwolenia na nagrywanie",Toast.LENGTH_SHORT).show();
                 }
-
                 if (!is_ON & permission){
                     tryb1=3;
-                    //onOffBtn.setBackgroundResource(R.drawable.poweron);
-                    viewIcons();
-                    //Context context = getApplicationContext();
-                    //Toast.makeText(context,"vib one- uruchomiono",Toast.LENGTH_SHORT).show();
                     Start_Service();
                 }
                 else{
                     tryb1 = 0;
                     //onOffBtn.setBackgroundResource(R.drawable.poweroff);
-                    viewIcons();
+                    //viewIcons();
                     Stop_Service();
                 }
                 break;
-            case R.id.btn_1:
+            case R.id.noiseLevelButton:
+                if(tryb1<4){
+                    tryb1++;
+                }
+                else tryb1=0;
+                Start_Service();
+                break;
+            case R.id.youtubeButton:
                 // do your code
                 break;
-            case R.id.btn_2:
-                // do your code
+            case R.id.menuButton:
+                Intent menuIntent = new Intent(MainActivity.this, MenuActivity.class);
+                startActivity(menuIntent);
                 break;
             default:
                 break;
