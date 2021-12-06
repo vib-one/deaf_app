@@ -14,15 +14,12 @@ import android.os.PowerManager;
 import android.os.Vibrator;
 
 import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationCompat.Builder;
-
-import java.util.function.ToDoubleBiFunction;
 
 public class MyService extends Service {
     private static final int sampleRate = 8000;
     public static boolean isrunning = false;
     //public static PowerManager.WakeLock mWakeLock;
-    public static int tryb = 0;
+    public static int noiseLevel = 0;
     private static double max = 0;
     // --Commented out by Inspection (2018-05-31 11:00):public static double max1 = 0;
     private static double ref = 0;
@@ -31,15 +28,15 @@ public class MyService extends Service {
     private static double offset = 2000;
     private static double ratio = 100;
     private Thread testThread;
-    private final double ref_length = 10;
+    private final double refLength = 10;
     private AudioRecord audio;
-    private int minbufferSize;
+    private int minBufferSize;
     private int bufferSize;
     private int lastLevel = 0;
-    private int rec_DELAY = 0;
-    private final int vib_DELAY = 500;
+    private int recDelay = 0;
+    private final int vibDelay = 500;
     // --Commented out by Inspection (2018-05-31 11:00):private int czulosc = 0;
-    private boolean isrecording = false;
+    private boolean isRecording = false;
     private AudioManager mAudioManager;
 
     public MyService() {
@@ -51,16 +48,16 @@ public class MyService extends Service {
         //bufferSize = 512;
 
         try {
-            minbufferSize = AudioRecord
+            minBufferSize = AudioRecord
                     .getMinBufferSize(sampleRate, AudioFormat.CHANNEL_IN_MONO,
                             AudioFormat.ENCODING_PCM_8BIT);
         } catch (Exception e) {
             android.util.Log.e("TrackingFlow", "Exception", e);
         }
 
-        bufferSize=2*minbufferSize;
+        bufferSize=2* minBufferSize;
 
-        rec_DELAY = (bufferSize * 1000) / (2 * sampleRate);
+        recDelay = (bufferSize * 1000) / (2 * sampleRate);
 
         PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
         @SuppressLint("InvalidWakeLockTag") PowerManager.WakeLock mWakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
@@ -90,14 +87,14 @@ public class MyService extends Service {
         String trybtxt = intent.getStringExtra("message");
 
 
-        tryb = Integer.parseInt(trybtxt);
-        if (tryb == 1) {
+        noiseLevel = Integer.parseInt(trybtxt);
+        if (noiseLevel == 1) {
             offset = 700;
-        } else if (tryb == 2) {
+        } else if (noiseLevel == 2) {
             offset = 1500;
-        } else if (tryb == 3) {
+        } else if (noiseLevel == 3) {
             offset = 4000;
-        } else if (tryb == 4) {
+        } else if (noiseLevel == 4) {
             offset = 10000;
         } else offset = 20000;
 
@@ -134,21 +131,21 @@ public class MyService extends Service {
     }
 
     private void startRecording() {
-        if (!isrecording) {
+        if (!isRecording) {
             audio = new AudioRecord(MediaRecorder.AudioSource.MIC, sampleRate,
                     AudioFormat.CHANNEL_IN_MONO,
                     AudioFormat.ENCODING_PCM_16BIT, bufferSize);
             audio.startRecording();
-            isrecording = true;
+            isRecording = true;
         }
     }
 
     private void stopRecording() {
-        if (null != audio && isrecording) {
+        if (null != audio && isRecording) {
             audio.stop();
             audio.release();
             audio = null;
-            isrecording = false;
+            isRecording = false;
         }
     }
 
@@ -251,7 +248,7 @@ public class MyService extends Service {
     }
 
     private void refAudioBuffer(){
-        ref = (ref * (ref_length - 1) / ref_length) + (max / ref_length);
+        ref = (ref * (refLength - 1) / refLength) + (max / refLength);
 
         //double ref1=Math.log10(1.1*ref);
         //double max2=Math.log10(max);
@@ -282,7 +279,7 @@ public class MyService extends Service {
             max = 0;
             Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
             if (v != null) {
-                v.vibrate(vib_DELAY);
+                v.vibrate(vibDelay);
             }
             try {
                 Thread.sleep(MenuActivity.vibSleep); //wątek śpi przez czas wybrany w menu 1,2,5,10s
@@ -296,7 +293,7 @@ public class MyService extends Service {
     }
     private void sleep(){
         try {
-            Thread.sleep(rec_DELAY);
+            Thread.sleep(recDelay);
         } catch (InterruptedException e) {
         }
     }

@@ -6,19 +6,6 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <Button
-        android:id="@+id/recordButton"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_alignParentRight="true"
-        android:layout_marginBottom="10dp"
-        android:background="#03A9F4"
-        android:paddingRight="10dp"
-        android:scaleType="fitCenter"
-        android:src="@drawable/ic_mic_black_off"
-        app:layout_constraintBottom_toTopOf="@+id/youtubeButton"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
 
     <Button
         android:id="@+id/onOffButton"
@@ -60,22 +47,42 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <EditText
-        android:id="@+id/text3"
+    <TextView
+        android:id="@+id/speechToText"
+        style="@style/Widget.AppCompat.TextView"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_centerInParent="true"
-        android:layout_marginLeft="10dp"
+        android:layout_marginStart="10dp"
         android:layout_marginTop="20dp"
-        android:layout_marginRight="10dp"
+        android:layout_marginEnd="10dp"
         android:layout_marginBottom="20dp"
-        android:background="@color/cardview_dark_background"
-        android:hint="Tap to Speak"
+        android:clickable="false"
         android:padding="10dp"
-        android:textColor="#03A9F4"
+        android:singleLine="false"
+        android:textAlignment="center"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:textColor="@android:color/widget_edittext_dark"
+        android:textColorHint="@android:color/widget_edittext_dark"
+        android:textSize="24sp"
+        android:typeface="normal"
         app:layout_constraintBottom_toTopOf="@+id/recordButton"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/onOffButton" />
+        app:layout_constraintTop_toBottomOf="@+id/onOffButton"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <Button
+        android:id="@+id/recordButton"
+        android:layout_width="75dp"
+        android:layout_height="75dp"
+        android:layout_marginBottom="20dp"
+        android:gravity="center"
+        android:textAlignment="center"
+        app:icon="@drawable/ic_mic_black_24dp"
+        app:layout_constraintBottom_toTopOf="@+id/youtubeButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
