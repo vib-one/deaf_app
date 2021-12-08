@@ -10,7 +10,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Deaf_alert">
         <activity
-            android:name=".TranslateActivity"
+            android:name=".YouTubeChannelActivity"
             android:exported="false" />
         <activity
             android:name=".SettingsActivity"

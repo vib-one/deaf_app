@@ -283,7 +283,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 startMyService();
                 break;
             case R.id.youtubeButton:
-                // do your code
+                Intent youtubeChannelIntent = new Intent(MainActivity.this, YouTubeChannelActivity.class);
+                startActivity(youtubeChannelIntent);
                 break;
             case R.id.menuButton:
                 Intent menuIntent = new Intent(MainActivity.this, MenuActivity.class);
