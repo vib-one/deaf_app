@@ -2,8 +2,6 @@ package com.example.deaf_alert;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
 import android.view.View;
 import android.widget.Button;
@@ -14,7 +12,6 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 
-import android.content.pm.PackageManager;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
@@ -28,6 +25,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private boolean isOn =false;
     private boolean permission=false;
     private int noiseLevel=0;
+    private double noiseLevelValueRMSdB=0;
+    private double noiseLevelValueMAXdB =0;
     private RequestPermissionHandler mRequestPermissionHandler;
 
     public static final Integer RecordAudioRequestCode = 1;
@@ -128,6 +127,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onResume();
 
         checkStatusService();
+        /*TextView noiseValueRMSdB=(TextView)findViewById(R.id.textView3);
+        String noiseValueRMStxt=Double.toString(noiseLevelValueRMSdB);
+        noiseValueRMSdB.setText(noiseValueRMStxt);
+*/
+        TextView noiseValueRMSdB=(TextView)findViewById(R.id.textView3);
+        String noiseValueRMStxt=Double.toString(MyService.noiseValueLevel);
+        noiseValueRMSdB.setText(noiseValueRMStxt);
+
+        TextView noiseValueMAXdB=(TextView)findViewById(R.id.textView4);
+        String noiseValueMAXdBtxt=Double.toString(noiseLevelValueMAXdB);
+        noiseValueMAXdB.setText(noiseValueMAXdBtxt);
         //viewIcons();
 /*
         ToggleButton ON_OFF_toggle = (ToggleButton) findViewById(R.id.ON_OFF_btn);
@@ -202,7 +212,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void checkStatusService(){
         if(MyService.isrunning){
             isOn =true;
-            noiseLevel =MyService.noiseLevel;
+            noiseLevel =MyService.noiseValueLevel;
+            noiseLevelValueRMSdB =MyService.noiseValueRMSdB;
+            noiseLevelValueMAXdB =MyService.noiseValueMAXdB;
 
             //onOffBtn.setBackgroundResource(R.drawable.poweron);
 
@@ -265,7 +277,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Toast.makeText(context,"Nie udzielono zezwolenia na nagrywanie",Toast.LENGTH_SHORT).show();
                 }
                 if (!isOn & permission){
-                    noiseLevel =3;
+                    noiseLevel =1;
                     startMyService();
                 }
                 else{
@@ -276,10 +288,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 break;
             case R.id.noiseLevelButton:
-                if(noiseLevel <4){
+                if(noiseLevel >=0 && noiseLevel<6){
                     noiseLevel++;
                 }
                 else noiseLevel =0;
+                TextView noiseValueRMSdB=(TextView)findViewById(R.id.textView3);
+                String noiseValueRMStxt=Double.toString(MyService.noiseValueLevel);
+                noiseValueRMSdB.setText(noiseValueRMStxt);
                 startMyService();
                 break;
             case R.id.youtubeButton:

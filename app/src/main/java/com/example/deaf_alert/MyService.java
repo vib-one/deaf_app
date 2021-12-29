@@ -12,18 +12,23 @@ import android.media.MediaRecorder;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.Vibrator;
+import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 
 public class MyService extends Service {
-    private static final int sampleRate = 8000;
+    private static final int sampleRate = 16000;
     public static boolean isrunning = false;
     //public static PowerManager.WakeLock mWakeLock;
-    public static int noiseLevel = 0;
-    private static double max = 0;
+    public static int noiseValueLevel = 0;
+    private static double noiseValueMAX = 0;
+    public static double noiseValueMAXdB=0;
+    public static double noiseValueRMS=0;
+    public static double noiseValueRMSdB=0;
+    private static double referenceNoiseLeveldB=1;
     // --Commented out by Inspection (2018-05-31 11:00):public static double max1 = 0;
-    private static double ref = 0;
-    private double refAudioValue=0;
+    private static double reference = 0;
+    private double referenceAudioValue =0;
     // --Commented out by Inspection (2018-05-31 11:00):private static double max_length = 2;
     private static double offset = 2000;
     private static double ratio = 100;
@@ -39,6 +44,8 @@ public class MyService extends Service {
     private boolean isRecording = false;
     private AudioManager mAudioManager;
 
+    public static final String logTag = "myLogs";
+
     public MyService() {
     }
 
@@ -50,12 +57,12 @@ public class MyService extends Service {
         try {
             minBufferSize = AudioRecord
                     .getMinBufferSize(sampleRate, AudioFormat.CHANNEL_IN_MONO,
-                            AudioFormat.ENCODING_PCM_8BIT);
+                            AudioFormat.ENCODING_PCM_16BIT);
         } catch (Exception e) {
-            android.util.Log.e("TrackingFlow", "Exception", e);
+            Log.e(logTag, "minBufferSize calculation error", e);
         }
 
-        bufferSize=2* minBufferSize;
+        bufferSize=minBufferSize;
 
         recDelay = (bufferSize * 1000) / (2 * sampleRate);
 
@@ -77,26 +84,36 @@ public class MyService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         //Toast.makeText(this,"vib one uruchomiono",Toast.LENGTH_LONG).show();
 
-        mAudioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
-        mAudioManager.setBluetoothScoOn(true);
-        mAudioManager.setMode(AudioManager.MODE_NORMAL);
-        mAudioManager.startBluetoothSco();
+        //mAudioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
+        //mAudioManager.setBluetoothScoOn(true);
+        //mAudioManager.setMode(AudioManager.MODE_NORMAL);
+        //mAudioManager.startBluetoothSco();
 
 
         //odczytuję wartość czułości z activity
-        String trybtxt = intent.getStringExtra("message");
+        String sensitivityMessageTxt = intent.getStringExtra("message");
 
 
-        noiseLevel = Integer.parseInt(trybtxt);
-        if (noiseLevel == 1) {
+        noiseValueLevel = Integer.parseInt(sensitivityMessageTxt);
+        if (noiseValueLevel == 1) {
             offset = 700;
-        } else if (noiseLevel == 2) {
+            referenceNoiseLeveldB=55.0;
+        } else if (noiseValueLevel == 2) {
             offset = 1500;
-        } else if (noiseLevel == 3) {
+            referenceNoiseLeveldB=60;
+        } else if (noiseValueLevel == 3) {
             offset = 4000;
-        } else if (noiseLevel == 4) {
+            referenceNoiseLeveldB=70;
+        } else if (noiseValueLevel == 4) {
             offset = 10000;
-        } else offset = 20000;
+            referenceNoiseLeveldB=80;
+        } else if (noiseValueLevel == 5) {
+            offset = 10000;
+            referenceNoiseLeveldB=85;
+        } else if (noiseValueLevel == 6) {
+            offset = 10000;
+            referenceNoiseLeveldB=90;
+        } else referenceNoiseLeveldB=100;
 
 
         Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
@@ -113,7 +130,6 @@ public class MyService extends Service {
 
     @Override
     public void onDestroy() {
-        //Toast.makeText(this,"vib one zatrzymano",Toast.LENGTH_SHORT).show();
         super.onDestroy();
         Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         if (v != null) {
@@ -125,9 +141,8 @@ public class MyService extends Service {
         }
         stoptestThread();
         stopRecording();
-        mAudioManager.stopBluetoothSco();
-        mAudioManager.setBluetoothScoOn(false);
-        //koniec blokady przejścia CPU w tryb uspienia
+        //mAudioManager.stopBluetoothSco();
+        //mAudioManager.setBluetoothScoOn(false);
     }
 
     private void startRecording() {
@@ -182,7 +197,7 @@ public class MyService extends Service {
                         ratio = 1.1;
                     }
 */
-                    refAudioBuffer();
+                    //referenceAudioValue();
                     //ratio=-(1/1000)*ref+5;
                     /*
                     if (max > offset + ref * ratio) {
@@ -224,66 +239,71 @@ public class MyService extends Service {
         }
     }
 
-    //metoda oblicza wartość natężenia dźwięku
     private void readAudioBuffer() {
 
         try {
             short[] buffer = new short[bufferSize];
             int bufferReadResult = 1;
+            int square=0;
+            double mean=0.0;
             int temp = 0;
             if (audio != null) {
                 bufferReadResult = audio.read(buffer, 0, bufferSize);
                 for (int i = 0; i < bufferReadResult; i++) {
                     if (buffer[i] > temp) {
-                        temp = buffer[i];
+                       temp = buffer[i];
                     }
+                    square += Math.pow(buffer[i], 2);
                     temp = Math.max(temp, buffer[i]);
                 }
-                max = temp;
+                mean=(square/(float)(bufferReadResult));
+                noiseValueMAX = temp;
+                noiseValueRMS=Math.sqrt(mean);
+                noiseValueRMSdB=10*Math.log10(noiseValueRMS);
+                noiseValueMAXdB=20*Math.log10(noiseValueMAX);
             }
-            if (lastLevel < 0) lastLevel = -lastLevel;
+            //if (lastLevel < 0) lastLevel = -lastLevel;
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(logTag, "read Audio Buffer error", e);
         }
     }
 
-    private void refAudioBuffer(){
-        ref = (ref * (refLength - 1) / refLength) + (max / refLength);
+    private void referenceAudioValue(){
+        reference = (reference * (refLength - 1) / refLength) + (noiseValueMAX / refLength);
 
-        //double ref1=Math.log10(1.1*ref);
-        //double max2=Math.log10(max);
-
-        if (ref >= 0 && ref < 1000) {
-            ratio = -(0.008) * ref + 10;
-        } else if (ref >= 1000 && ref < 5000) {
-            ratio = -(0.0001) * ref + 2.125;
-        } else if (ref >= 5000 && ref < 20000) {
+        if (reference >= 0 && reference < 1000) {
+            ratio = -(0.008) * reference + 10;
+        } else if (reference >= 1000 && reference < 5000) {
+            ratio = -(0.0001) * reference + 2.125;
+        } else if (reference >= 5000 && reference < 20000) {
             ratio = -(0.000027) + 1.63;
         } else {
             ratio = 1.1;
         }
-        refAudioValue= offset + ref * ratio;
+        referenceAudioValue = offset + reference * ratio;
     }
     private void calcAlarmValue(){
         PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
         assert powerManager != null;
         @SuppressLint("InvalidWakeLockTag") final PowerManager.WakeLock mWakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "vib");
 
-        if (max > refAudioValue) {
+        if (noiseValueMAXdB >= referenceNoiseLeveldB) {
             // uruchamia partial wake lock/ blokuje przejście CPU w tryb uspienia
             if (!mWakeLock.isHeld()) {
                 mWakeLock.acquire(5 * 1000L /*5 sekund*/);
             }
             stopRecording();
             //max1=0;
-            max = 0;
-            Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-            if (v != null) {
-                v.vibrate(vibDelay);
+            //max = 0;
+            //noiseValueMAXdB=0;
+            Vibrator vibrate = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+            if (vibrate != null) {
+                vibrate.vibrate(vibDelay);
             }
             try {
                 Thread.sleep(MenuActivity.vibSleep); //wątek śpi przez czas wybrany w menu 1,2,5,10s
             } catch (InterruptedException e) {
+                Log.e(logTag, "Thread sleep error", e);
             }
             // zwalnia partial wake lock
             if (mWakeLock.isHeld()) {
@@ -295,6 +315,7 @@ public class MyService extends Service {
         try {
             Thread.sleep(recDelay);
         } catch (InterruptedException e) {
+            Log.e(logTag, "Thread sleep error",e);
         }
     }
 
