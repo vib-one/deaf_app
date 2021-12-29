@@ -138,45 +138,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         TextView noiseValueMAXdB=(TextView)findViewById(R.id.textView4);
         String noiseValueMAXdBtxt=Double.toString(noiseLevelValueMAXdB);
         noiseValueMAXdB.setText(noiseValueMAXdBtxt);
-        //viewIcons();
-/*
-        ToggleButton ON_OFF_toggle = (ToggleButton) findViewById(R.id.ON_OFF_btn);
-        ON_OFF_toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    Context context = getApplicationContext();
-                    Toast.makeText(context,"vib one- uruchomiono",Toast.LENGTH_SHORT).show();
-                    //Start_Service();
-                    is_ON=true;
-                    // The toggle is enabled
 
-                } else {
-                    Stop_Service();
-                    is_ON=false;
-                    // The toggle is disabled
-                }
-            }
-        });
-        youtubeButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(MyService.isrunning){
-                    tryb1 = 2;
-                    //tryb1txt = String.valueOf(tryb1);
-                    //Context context = getApplicationContext();
-                    //Toast.makeText(context,"Tryb 2",Toast.LENGTH_SHORT).show();
-                    //checkStatusService();
-                }
-            }
-        });
-        menuButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent menuIntent = new Intent(MainActivity.this, MenuActivity.class);
-                startActivity(menuIntent);
-            }
-        });
-        */
+
     }
 
     @Override

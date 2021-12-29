@@ -96,22 +96,16 @@ public class MyService extends Service {
 
         noiseValueLevel = Integer.parseInt(sensitivityMessageTxt);
         if (noiseValueLevel == 1) {
-            offset = 700;
             referenceNoiseLeveldB=55.0;
         } else if (noiseValueLevel == 2) {
-            offset = 1500;
             referenceNoiseLeveldB=60;
         } else if (noiseValueLevel == 3) {
-            offset = 4000;
             referenceNoiseLeveldB=70;
         } else if (noiseValueLevel == 4) {
-            offset = 10000;
             referenceNoiseLeveldB=80;
         } else if (noiseValueLevel == 5) {
-            offset = 10000;
             referenceNoiseLeveldB=85;
         } else if (noiseValueLevel == 6) {
-            offset = 10000;
             referenceNoiseLeveldB=90;
         } else referenceNoiseLeveldB=100;
 
@@ -174,54 +168,14 @@ public class MyService extends Service {
             public void run() {
                 while (testThread != null && !testThread.isInterrupted()) {
                     startRecording(); //rozpoczynamy nagrywanie
-                   /*
+
                     try {
-                        Thread.sleep(rec_DELAY);
+                        Thread.sleep(recDelay);
                     } catch (InterruptedException e) {
                     }
-                    */
+
                     readAudioBuffer();
-                    //max1 = (max1 * (max_length - 1) / max_length) + (max / max_length);
-                    /*ref = (ref * (ref_length - 1) / ref_length) + (max / ref_length);
 
-                    //double ref1=Math.log10(1.1*ref);
-                    //double max2=Math.log10(max);
-
-                    if (ref >= 0 && ref < 1000) {
-                        ratio = -(0.008) * ref + 10;
-                    } else if (ref >= 1000 && ref < 5000) {
-                        ratio = -(0.0001) * ref + 2.125;
-                    } else if (ref >= 5000 && ref < 20000) {
-                        ratio = -(0.000027) + 1.63;
-                    } else {
-                        ratio = 1.1;
-                    }
-*/
-                    //referenceAudioValue();
-                    //ratio=-(1/1000)*ref+5;
-                    /*
-                    if (max > offset + ref * ratio) {
-                        // uruchamia partial wake lock/ blokuje przejście CPU w tryb uspienia
-                        if (!mWakeLock.isHeld()) {
-                            mWakeLock.acquire(5 * 1000L);
-                        }
-                        stopRecording();
-                        //max1=0;
-                        max = 0;
-                        Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-                        if (v != null) {
-                            v.vibrate(vib_DELAY);
-                        }
-                        try {
-                            Thread.sleep(MenuActivity.vibSleep); //wątek śpi przez czas wybrany w menu 1,2,5,10s
-                        } catch (InterruptedException e) {
-                        }
-                        // zwalnia partial wake lock
-                        if (mWakeLock.isHeld()) {
-                            mWakeLock.release();
-                        }
-                    }
-                    */
                     calcAlarmValue();
                 }
             }
@@ -268,20 +222,6 @@ public class MyService extends Service {
         }
     }
 
-    private void referenceAudioValue(){
-        reference = (reference * (refLength - 1) / refLength) + (noiseValueMAX / refLength);
-
-        if (reference >= 0 && reference < 1000) {
-            ratio = -(0.008) * reference + 10;
-        } else if (reference >= 1000 && reference < 5000) {
-            ratio = -(0.0001) * reference + 2.125;
-        } else if (reference >= 5000 && reference < 20000) {
-            ratio = -(0.000027) + 1.63;
-        } else {
-            ratio = 1.1;
-        }
-        referenceAudioValue = offset + reference * ratio;
-    }
     private void calcAlarmValue(){
         PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
         assert powerManager != null;
@@ -293,9 +233,7 @@ public class MyService extends Service {
                 mWakeLock.acquire(5 * 1000L /*5 sekund*/);
             }
             stopRecording();
-            //max1=0;
-            //max = 0;
-            //noiseValueMAXdB=0;
+
             Vibrator vibrate = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
             if (vibrate != null) {
                 vibrate.vibrate(vibDelay);
