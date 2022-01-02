@@ -1,6 +1,8 @@
 package com.example.deaf_alert;
 
 import android.annotation.SuppressLint;
+import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
@@ -17,9 +19,9 @@ import android.util.Log;
 import androidx.core.app.NotificationCompat;
 
 public class MyService extends Service {
-    private static final int sampleRate = 16000;
+    private static final int sampleRate = 8000;
     public static boolean isrunning = false;
-    //public static PowerManager.WakeLock mWakeLock;
+    public static PowerManager.WakeLock mWakeLock;
     public static int noiseValueLevel = 0;
     private static double noiseValueMAX = 0;
     public static double noiseValueMAXdB=0;
@@ -49,10 +51,10 @@ public class MyService extends Service {
     public MyService() {
     }
 
+    @SuppressLint("InvalidWakeLockTag")
     @Override
     public void onCreate() {
         super.onCreate();
-        //bufferSize = 512;
 
         try {
             minBufferSize = AudioRecord
@@ -62,16 +64,12 @@ public class MyService extends Service {
             Log.e(logTag, "minBufferSize calculation error", e);
         }
 
-        bufferSize=minBufferSize;
-
-        recDelay = (bufferSize * 1000) / (2 * sampleRate);
+        bufferSize=2*minBufferSize;
+        recDelay = (bufferSize * 1000) / (sampleRate);
 
         PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        @SuppressLint("InvalidWakeLockTag") PowerManager.WakeLock mWakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
-                "");
-
-        // inicjalizuje partial wake lock/ blokadę przejścia CPU w tryb uśpienia
-
+        assert powerManager != null;
+        mWakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "vibWakeLockTag");
     }
 
     @Override
@@ -82,17 +80,26 @@ public class MyService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        //Toast.makeText(this,"vib one uruchomiono",Toast.LENGTH_LONG).show();
 
-        //mAudioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
-        //mAudioManager.setBluetoothScoOn(true);
-        //mAudioManager.setMode(AudioManager.MODE_NORMAL);
-        //mAudioManager.startBluetoothSco();
+        final String channelID= "foreground service id";
+        NotificationChannel channel= new NotificationChannel(
+                channelID,
+                channelID,
+                NotificationManager.IMPORTANCE_LOW
+        );
 
+        getSystemService(NotificationManager.class).createNotificationChannel(channel);
+        Notification.Builder notification = new Notification.Builder(this,channelID)
+                .setContentText("Vib One is running")
+                .setContentTitle("Vib One enabled")
+                .setSmallIcon(R.drawable.ic_launcher_background);
 
-        //odczytuję wartość czułości z activity
+        startForeground(1001,notification.build());
+
         String sensitivityMessageTxt = intent.getStringExtra("message");
-
+         //if (!mWakeLock.isHeld()) {
+         //    mWakeLock.acquire();
+         //}
 
         noiseValueLevel = Integer.parseInt(sensitivityMessageTxt);
         if (noiseValueLevel == 1) {
@@ -109,26 +116,27 @@ public class MyService extends Service {
             referenceNoiseLeveldB=90;
         } else referenceNoiseLeveldB=100;
 
-
         Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         if (v != null) {
             //noinspection deprecation
             v.vibrate(250);
         }
-
         if (!isrunning) {
             testThread();
         }
-        return START_STICKY;
+        return super.onStartCommand(intent, flags, startId);
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        //if (mWakeLock.isHeld()) {
+         //      mWakeLock.release();
+          //  }
         Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         if (v != null) {
             //noinspection deprecation
-            v.vibrate(500);
+            v.vibrate(2000);
         }
         if (PowerStateChangedReceiver.BatteryLow) {
             sendNotification();
@@ -159,28 +167,19 @@ public class MyService extends Service {
     }
 
     private void testThread() {
-/*
-        PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
-        assert powerManager != null;
-        @SuppressLint("InvalidWakeLockTag") final PowerManager.WakeLock mWakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "vib");
-*/
-        testThread = new Thread(new Runnable() {
-            public void run() {
-                while (testThread != null && !testThread.isInterrupted()) {
-                    startRecording(); //rozpoczynamy nagrywanie
 
-                    try {
-                        Thread.sleep(recDelay);
-                    } catch (InterruptedException e) {
-                    }
-
-                    readAudioBuffer();
-
-                    calcAlarmValue();
+        testThread = new Thread(() -> {
+            while (testThread != null && !testThread.isInterrupted()) {
+                startRecording(); //rozpoczynamy nagrywanie
+                try {
+                    Thread.sleep(recDelay);
+                } catch (InterruptedException e) {
                 }
+                readAudioBuffer();
+                calcAlarmValue();
             }
         });
-        testThread.setPriority(10);
+        //testThread.setPriority(10);
         testThread.start();
         isrunning = true;
     }
@@ -212,41 +211,36 @@ public class MyService extends Service {
                 }
                 mean=(square/(float)(bufferReadResult));
                 noiseValueMAX = temp;
-                noiseValueRMS=Math.sqrt(mean);
-                noiseValueRMSdB=10*Math.log10(noiseValueRMS);
+                //noiseValueRMS=Math.sqrt(mean);
+                //noiseValueRMSdB=10*Math.log10(noiseValueRMS);
                 noiseValueMAXdB=20*Math.log10(noiseValueMAX);
             }
-            //if (lastLevel < 0) lastLevel = -lastLevel;
         } catch (Exception e) {
             Log.e(logTag, "read Audio Buffer error", e);
         }
     }
 
     private void calcAlarmValue(){
-        PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+       /* PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
         assert powerManager != null;
         @SuppressLint("InvalidWakeLockTag") final PowerManager.WakeLock mWakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "vib");
-
+*/
         if (noiseValueMAXdB >= referenceNoiseLeveldB) {
             // uruchamia partial wake lock/ blokuje przejście CPU w tryb uspienia
-            if (!mWakeLock.isHeld()) {
-                mWakeLock.acquire(5 * 1000L /*5 sekund*/);
-            }
+           // if (!mWakeLock.isHeld()) {
+           //     mWakeLock.acquire(5 * 1000L /*5 sekund*/);
+           // }
             stopRecording();
 
             Vibrator vibrate = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
             if (vibrate != null) {
                 vibrate.vibrate(vibDelay);
             }
-            try {
-                Thread.sleep(MenuActivity.vibSleep); //wątek śpi przez czas wybrany w menu 1,2,5,10s
-            } catch (InterruptedException e) {
-                Log.e(logTag, "Thread sleep error", e);
-            }
+            sleep();
             // zwalnia partial wake lock
-            if (mWakeLock.isHeld()) {
-                mWakeLock.release();
-            }
+            //if (mWakeLock.isHeld()) {
+            //   mWakeLock.release();
+           // }
         }
     }
     private void sleep(){

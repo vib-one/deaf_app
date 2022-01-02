@@ -3,6 +3,7 @@ package com.example.deaf_alert;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.ActivityManager;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -32,13 +33,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static final Integer RecordAudioRequestCode = 1;
     private SpeechRecognizer speechRecognizer;
 
+    private boolean mBound = false;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setTheme(android.R.style.Theme_DeviceDefault_Light_NoActionBar_Fullscreen);
         setContentView(R.layout.activity_main);
 
-        mRequestPermissionHandler = new RequestPermissionHandler();
         permissionCheck();
 
         Button onOffButton = findViewById(R.id.onOffButton);
@@ -155,18 +157,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void startMyService() {
-
-        //-----> metoda uruchamia MyService (usługa w tle)
         Intent serviceIntent = new Intent(MainActivity.this, MyService.class);
-        //-----> wysyła string z wartością czułości do MyService
-        String tryb1txt = String.valueOf(noiseLevel);
-        serviceIntent.putExtra("message", tryb1txt);
-        //-----> start działania MyService
+        String sensitivityModetxt= String.valueOf(noiseLevel);
+        serviceIntent.putExtra("message", sensitivityModetxt);
         this.startService(serviceIntent);
         isOn = true;
     }
 
-    //metoda zatrzymuje działanie MyService
     private void stopMyService() {
         stopService(new Intent(getBaseContext(),MyService.class));
         isOn = false;
@@ -178,59 +175,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             noiseLevel =MyService.noiseValueLevel;
             noiseLevelValueRMSdB =MyService.noiseValueRMSdB;
             noiseLevelValueMAXdB =MyService.noiseValueMAXdB;
-
             //onOffBtn.setBackgroundResource(R.drawable.poweron);
 
-        }else{
+        }
+        else{
             isOn =false;
-            //onOffBtn.setBackgroundResource(R.drawable.poweroff);
         }
     }
-    /*   private void viewIcons(){
-           if (tryb1==1){
-               noiseLevelButton.setBackgroundResource(R.drawable.on1);
-               youtubeButton.setBackgroundResource(R.drawable.off2);
-               btn_3.setBackgroundResource(R.drawable.off3);
-               btn_4.setBackgroundResource(R.drawable.off4);
-               btn_5.setBackgroundResource(R.drawable.off5);
-           }
-           else if (tryb1==2){
-               noiseLevelButton.setBackgroundResource(R.drawable.off1);
-               youtubeButton.setBackgroundResource(R.drawable.on2);
-               btn_3.setBackgroundResource(R.drawable.off3);
-               btn_4.setBackgroundResource(R.drawable.off4);
-               btn_5.setBackgroundResource(R.drawable.off5);
-           }
-           else if (tryb1==3){
-               noiseLevelButton.setBackgroundResource(R.drawable.off1);
-               youtubeButton.setBackgroundResource(R.drawable.off2);
-               btn_3.setBackgroundResource(R.drawable.on3);
-               btn_4.setBackgroundResource(R.drawable.off4);
-               btn_5.setBackgroundResource(R.drawable.off5);
-           }
-           else if (tryb1==4){
-               noiseLevelButton.setBackgroundResource(R.drawable.off1);
-               youtubeButton.setBackgroundResource(R.drawable.off2);
-               btn_3.setBackgroundResource(R.drawable.off3);
-               btn_4.setBackgroundResource(R.drawable.on4);
-               btn_5.setBackgroundResource(R.drawable.off5);
-           }
-           else if (tryb1==5){
-               noiseLevelButton.setBackgroundResource(R.drawable.off1);
-               youtubeButton.setBackgroundResource(R.drawable.off2);
-               btn_3.setBackgroundResource(R.drawable.off3);
-               btn_4.setBackgroundResource(R.drawable.off4);
-               btn_5.setBackgroundResource(R.drawable.on5);
-           }
-           else{
-               noiseLevelButton.setBackgroundResource(R.drawable.off1);
-               youtubeButton.setBackgroundResource(R.drawable.off2);
-               btn_3.setBackgroundResource(R.drawable.off3);
-               btn_4.setBackgroundResource(R.drawable.off4);
-               btn_5.setBackgroundResource(R.drawable.off5);
-           }
-       }
-   */
+
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -240,13 +192,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Toast.makeText(context,"Nie udzielono zezwolenia na nagrywanie",Toast.LENGTH_SHORT).show();
                 }
                 if (!isOn & permission){
-                    noiseLevel =1;
+                    noiseLevel =2;
                     startMyService();
                 }
                 else{
                     noiseLevel = 0;
-                    //onOffBtn.setBackgroundResource(R.drawable.poweroff);
-                    //viewIcons();
                     stopMyService();
                 }
                 break;
@@ -277,8 +227,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
     private void permissionCheck(){
+        mRequestPermissionHandler = new RequestPermissionHandler();
         mRequestPermissionHandler.requestPermission(this, new String[] {
-                Manifest.permission.RECORD_AUDIO
+                Manifest.permission.RECORD_AUDIO,
+                Manifest.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+                Manifest.permission.WAKE_LOCK,
+                Manifest.permission.MODIFY_AUDIO_SETTINGS,
+                Manifest.permission.VIBRATE,
+                Manifest.permission.INTERNET
         }, 123, new RequestPermissionHandler.RequestPermissionListener() {
             @Override
             public void onSuccess() {
@@ -299,6 +255,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         mRequestPermissionHandler.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    public boolean vibOneServiceRunning(){
+        ActivityManager activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for(ActivityManager.RunningServiceInfo service:activityManager.getRunningServices(Integer.MAX_VALUE)){
+            if(MyService.class.getName().equals(service.service.getClassName())){
+                return true;
+            }
+        }
+        return false;
     }
 }
 
