@@ -17,6 +17,7 @@ import android.os.Vibrator;
 import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 public class MyService extends Service {
     private static final int sampleRate = 8000;
@@ -41,7 +42,7 @@ public class MyService extends Service {
     private int bufferSize;
     private int lastLevel = 0;
     private int recDelay = 0;
-    private final int vibDelay = 500;
+    private final int vibDelay = 200;
     // --Commented out by Inspection (2018-05-31 11:00):private int czulosc = 0;
     private boolean isRecording = false;
     private AudioManager mAudioManager;
@@ -64,7 +65,7 @@ public class MyService extends Service {
             Log.e(logTag, "minBufferSize calculation error", e);
         }
 
-        bufferSize=2*minBufferSize;
+        bufferSize=minBufferSize;
         recDelay = (bufferSize * 1000) / (sampleRate);
 
         PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
@@ -81,11 +82,13 @@ public class MyService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        final String channelID= "foreground service id";
+        startId=1121;
+
+        final String channelID= "1120";
         NotificationChannel channel= new NotificationChannel(
                 channelID,
                 channelID,
-                NotificationManager.IMPORTANCE_LOW
+                NotificationManager.IMPORTANCE_DEFAULT
         );
 
         getSystemService(NotificationManager.class).createNotificationChannel(channel);
@@ -94,7 +97,9 @@ public class MyService extends Service {
                 .setContentTitle("Vib One enabled")
                 .setSmallIcon(R.drawable.ic_launcher_background);
 
-        startForeground(1001,notification.build());
+        startForeground(1120,notification.build());
+
+        //startForeground(111,buildForegroundNotification());
 
         String sensitivityMessageTxt = intent.getStringExtra("message");
          //if (!mWakeLock.isHeld()) {
@@ -119,7 +124,7 @@ public class MyService extends Service {
         Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         if (v != null) {
             //noinspection deprecation
-            v.vibrate(250);
+            v.vibrate(100);
         }
         if (!isrunning) {
             testThread();
@@ -136,7 +141,7 @@ public class MyService extends Service {
         Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         if (v != null) {
             //noinspection deprecation
-            v.vibrate(2000);
+            v.vibrate(200);
         }
         if (PowerStateChangedReceiver.BatteryLow) {
             sendNotification();
@@ -174,12 +179,14 @@ public class MyService extends Service {
                 try {
                     Thread.sleep(recDelay);
                 } catch (InterruptedException e) {
+                    Log.e(logTag, "sleep error", e);
                 }
+
                 readAudioBuffer();
                 calcAlarmValue();
             }
         });
-        //testThread.setPriority(10);
+        testThread.setPriority(10);
         testThread.start();
         isrunning = true;
     }
@@ -245,7 +252,7 @@ public class MyService extends Service {
     }
     private void sleep(){
         try {
-            Thread.sleep(recDelay);
+            Thread.sleep(MenuActivity.vibSleep);
         } catch (InterruptedException e) {
             Log.e(logTag, "Thread sleep error",e);
         }
@@ -268,6 +275,24 @@ public class MyService extends Service {
             mNotificationManager.notify(0, mBuilder.build());
         }
 
+    }
+
+    private void updateUI(String statusValue){
+
+        Intent broadcastIntent = new Intent(MyService.this, MainActivity.class);
+        broadcastIntent.putExtra("status", statusValue);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(broadcastIntent);
+    }
+
+    private Notification buildForegroundNotification() {
+        NotificationCompat.Builder b=new NotificationCompat.Builder(this);
+
+        b.setOngoing(true)
+                .setContentText("Vib One is running")
+                .setContentTitle("Vib One enabled")
+                .setSmallIcon(R.drawable.ic_launcher_background);
+
+        return(b.build());
     }
 
 }

@@ -3,7 +3,7 @@ package com.example.deaf_alert;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.app.ActivityManager;
+import android.content.BroadcastReceiver;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -25,7 +25,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private boolean isOn =false;
     private boolean permission=false;
-    private int noiseLevel=0;
+    private int noiseLevel=3;
     private double noiseLevelValueRMSdB=0;
     private double noiseLevelValueMAXdB =0;
     private RequestPermissionHandler mRequestPermissionHandler;
@@ -33,14 +33,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static final Integer RecordAudioRequestCode = 1;
     private SpeechRecognizer speechRecognizer;
 
-    private boolean mBound = false;
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setTheme(android.R.style.Theme_DeviceDefault_Light_NoActionBar_Fullscreen);
         setContentView(R.layout.activity_main);
 
+        mRequestPermissionHandler = new RequestPermissionHandler();
         permissionCheck();
 
         Button onOffButton = findViewById(R.id.onOffButton);
@@ -54,7 +53,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Button recordButton = findViewById(R.id.recordButton);
         recordButton.setOnClickListener(this);
         TextView speechToText = findViewById(R.id.speechToText);
-        checkStatusService();
+
+        //checkStatusService();
 
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
 
@@ -133,15 +133,54 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         String noiseValueRMStxt=Double.toString(noiseLevelValueRMSdB);
         noiseValueRMSdB.setText(noiseValueRMStxt);
 */
-        TextView noiseValueRMSdB=(TextView)findViewById(R.id.textView3);
-        String noiseValueRMStxt=Double.toString(MyService.noiseValueLevel);
-        noiseValueRMSdB.setText(noiseValueRMStxt);
+        if(isOn) {
+            TextView noiseValueRMSdB = (TextView) findViewById(R.id.textView3);
+            String noiseValueRMStxt = Double.toString(MyService.noiseValueLevel);
+            noiseValueRMSdB.setText(noiseValueRMStxt);
 
-        TextView noiseValueMAXdB=(TextView)findViewById(R.id.textView4);
-        String noiseValueMAXdBtxt=Double.toString(noiseLevelValueMAXdB);
-        noiseValueMAXdB.setText(noiseValueMAXdBtxt);
+            TextView noiseValueMAXdB = (TextView) findViewById(R.id.textView4);
+            String noiseValueMAXdBtxt = Double.toString(MyService.noiseValueMAXdB);
+            noiseValueMAXdB.setText(noiseValueMAXdBtxt);
+        }
+        //viewIcons();
+/*
+        ToggleButton ON_OFF_toggle = (ToggleButton) findViewById(R.id.ON_OFF_btn);
+        ON_OFF_toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    Context context = getApplicationContext();
+                    Toast.makeText(context,"vib one- uruchomiono",Toast.LENGTH_SHORT).show();
+                    //Start_Service();
+                    is_ON=true;
+                    // The toggle is enabled
 
-
+                } else {
+                    Stop_Service();
+                    is_ON=false;
+                    // The toggle is disabled
+                }
+            }
+        });
+        youtubeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(MyService.isrunning){
+                    tryb1 = 2;
+                    //tryb1txt = String.valueOf(tryb1);
+                    //Context context = getApplicationContext();
+                    //Toast.makeText(context,"Tryb 2",Toast.LENGTH_SHORT).show();
+                    //checkStatusService();
+                }
+            }
+        });
+        menuButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent menuIntent = new Intent(MainActivity.this, MenuActivity.class);
+                startActivity(menuIntent);
+            }
+        });
+        */
     }
 
     @Override
@@ -157,13 +196,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void startMyService() {
+
+        //-----> metoda uruchamia MyService (usługa w tle)
         Intent serviceIntent = new Intent(MainActivity.this, MyService.class);
-        String sensitivityModetxt= String.valueOf(noiseLevel);
-        serviceIntent.putExtra("message", sensitivityModetxt);
+        //-----> wysyła string z wartością czułości do MyService
+        String tryb1txt = String.valueOf(noiseLevel);
+        serviceIntent.putExtra("message", tryb1txt);
+        //-----> start działania MyService
         this.startService(serviceIntent);
         isOn = true;
     }
 
+    //metoda zatrzymuje działanie MyService
     private void stopMyService() {
         stopService(new Intent(getBaseContext(),MyService.class));
         isOn = false;
@@ -175,14 +219,59 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             noiseLevel =MyService.noiseValueLevel;
             noiseLevelValueRMSdB =MyService.noiseValueRMSdB;
             noiseLevelValueMAXdB =MyService.noiseValueMAXdB;
+
             //onOffBtn.setBackgroundResource(R.drawable.poweron);
 
-        }
-        else{
+        }else{
             isOn =false;
+            //onOffBtn.setBackgroundResource(R.drawable.poweroff);
         }
     }
-
+    /*   private void viewIcons(){
+           if (tryb1==1){
+               noiseLevelButton.setBackgroundResource(R.drawable.on1);
+               youtubeButton.setBackgroundResource(R.drawable.off2);
+               btn_3.setBackgroundResource(R.drawable.off3);
+               btn_4.setBackgroundResource(R.drawable.off4);
+               btn_5.setBackgroundResource(R.drawable.off5);
+           }
+           else if (tryb1==2){
+               noiseLevelButton.setBackgroundResource(R.drawable.off1);
+               youtubeButton.setBackgroundResource(R.drawable.on2);
+               btn_3.setBackgroundResource(R.drawable.off3);
+               btn_4.setBackgroundResource(R.drawable.off4);
+               btn_5.setBackgroundResource(R.drawable.off5);
+           }
+           else if (tryb1==3){
+               noiseLevelButton.setBackgroundResource(R.drawable.off1);
+               youtubeButton.setBackgroundResource(R.drawable.off2);
+               btn_3.setBackgroundResource(R.drawable.on3);
+               btn_4.setBackgroundResource(R.drawable.off4);
+               btn_5.setBackgroundResource(R.drawable.off5);
+           }
+           else if (tryb1==4){
+               noiseLevelButton.setBackgroundResource(R.drawable.off1);
+               youtubeButton.setBackgroundResource(R.drawable.off2);
+               btn_3.setBackgroundResource(R.drawable.off3);
+               btn_4.setBackgroundResource(R.drawable.on4);
+               btn_5.setBackgroundResource(R.drawable.off5);
+           }
+           else if (tryb1==5){
+               noiseLevelButton.setBackgroundResource(R.drawable.off1);
+               youtubeButton.setBackgroundResource(R.drawable.off2);
+               btn_3.setBackgroundResource(R.drawable.off3);
+               btn_4.setBackgroundResource(R.drawable.off4);
+               btn_5.setBackgroundResource(R.drawable.on5);
+           }
+           else{
+               noiseLevelButton.setBackgroundResource(R.drawable.off1);
+               youtubeButton.setBackgroundResource(R.drawable.off2);
+               btn_3.setBackgroundResource(R.drawable.off3);
+               btn_4.setBackgroundResource(R.drawable.off4);
+               btn_5.setBackgroundResource(R.drawable.off5);
+           }
+       }
+   */
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -192,11 +281,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Toast.makeText(context,"Nie udzielono zezwolenia na nagrywanie",Toast.LENGTH_SHORT).show();
                 }
                 if (!isOn & permission){
-                    noiseLevel =2;
+                    //noiseLevel =3;
                     startMyService();
                 }
                 else{
-                    noiseLevel = 0;
                     stopMyService();
                 }
                 break;
@@ -205,10 +293,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     noiseLevel++;
                 }
                 else noiseLevel =0;
-                TextView noiseValueRMSdB=(TextView)findViewById(R.id.textView3);
-                String noiseValueRMStxt=Double.toString(MyService.noiseValueLevel);
-                noiseValueRMSdB.setText(noiseValueRMStxt);
+                stopMyService();
                 startMyService();
+
                 break;
             case R.id.youtubeButton:
                 Intent youtubeChannelIntent = new Intent(MainActivity.this, YouTubeChannelActivity.class);
@@ -227,14 +314,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
     private void permissionCheck(){
-        mRequestPermissionHandler = new RequestPermissionHandler();
         mRequestPermissionHandler.requestPermission(this, new String[] {
-                Manifest.permission.RECORD_AUDIO,
-                Manifest.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
-                Manifest.permission.WAKE_LOCK,
-                Manifest.permission.MODIFY_AUDIO_SETTINGS,
-                Manifest.permission.VIBRATE,
-                Manifest.permission.INTERNET
+                Manifest.permission.RECORD_AUDIO
         }, 123, new RequestPermissionHandler.RequestPermissionListener() {
             @Override
             public void onSuccess() {
@@ -257,14 +338,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mRequestPermissionHandler.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
-    public boolean vibOneServiceRunning(){
-        ActivityManager activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-        for(ActivityManager.RunningServiceInfo service:activityManager.getRunningServices(Integer.MAX_VALUE)){
-            if(MyService.class.getName().equals(service.service.getClassName())){
-                return true;
+    public void broadcastReciver(){
+        BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                // Get extra data included in the Intent
+                String brStatus = intent.getStringExtra("status");
+
+                if(brStatus != null){
+
+                    //Do something
+                }
             }
-        }
-        return false;
+        };
     }
 }
 
