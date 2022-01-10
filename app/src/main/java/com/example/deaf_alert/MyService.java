@@ -7,17 +7,18 @@ import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ServiceInfo;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
+import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.Vibrator;
 import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 public class MyService extends Service {
     private static final int sampleRate = 8000;
@@ -42,7 +43,7 @@ public class MyService extends Service {
     private int bufferSize;
     private int lastLevel = 0;
     private int recDelay = 0;
-    private final int vibDelay = 200;
+    private final int vibDelay = 500;
     // --Commented out by Inspection (2018-05-31 11:00):private int czulosc = 0;
     private boolean isRecording = false;
     private AudioManager mAudioManager;
@@ -65,7 +66,7 @@ public class MyService extends Service {
             Log.e(logTag, "minBufferSize calculation error", e);
         }
 
-        bufferSize=minBufferSize;
+        bufferSize=5*minBufferSize;
         recDelay = (bufferSize * 1000) / (sampleRate);
 
         PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
@@ -82,29 +83,27 @@ public class MyService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        startId=1121;
-
-        final String channelID= "1120";
+        final String channelID= "100";
         NotificationChannel channel= new NotificationChannel(
                 channelID,
                 channelID,
-                NotificationManager.IMPORTANCE_DEFAULT
+                NotificationManager.IMPORTANCE_LOW
         );
 
         getSystemService(NotificationManager.class).createNotificationChannel(channel);
-        Notification.Builder notification = new Notification.Builder(this,channelID)
+        Notification notification = new Notification.Builder(this,channelID)
                 .setContentText("Vib One is running")
                 .setContentTitle("Vib One enabled")
-                .setSmallIcon(R.drawable.ic_launcher_background);
-
-        startForeground(1120,notification.build());
-
-        //startForeground(111,buildForegroundNotification());
+                .setSmallIcon(R.drawable.ic_launcher_background)
+                .build();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+            startForeground(1001, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE);
+        else startForeground(1001,notification);
 
         String sensitivityMessageTxt = intent.getStringExtra("message");
-         //if (!mWakeLock.isHeld()) {
-         //    mWakeLock.acquire();
-         //}
+         if (!mWakeLock.isHeld()) {
+             mWakeLock.acquire();
+         }
 
         noiseValueLevel = Integer.parseInt(sensitivityMessageTxt);
         if (noiseValueLevel == 1) {
@@ -124,7 +123,7 @@ public class MyService extends Service {
         Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         if (v != null) {
             //noinspection deprecation
-            v.vibrate(100);
+            v.vibrate(250);
         }
         if (!isrunning) {
             testThread();
@@ -135,13 +134,13 @@ public class MyService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        //if (mWakeLock.isHeld()) {
-         //      mWakeLock.release();
-          //  }
+        if (mWakeLock.isHeld()) {
+               mWakeLock.release();
+            }
         Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         if (v != null) {
             //noinspection deprecation
-            v.vibrate(200);
+            v.vibrate(2000);
         }
         if (PowerStateChangedReceiver.BatteryLow) {
             sendNotification();
@@ -179,14 +178,12 @@ public class MyService extends Service {
                 try {
                     Thread.sleep(recDelay);
                 } catch (InterruptedException e) {
-                    Log.e(logTag, "sleep error", e);
                 }
-
                 readAudioBuffer();
                 calcAlarmValue();
             }
         });
-        testThread.setPriority(10);
+        testThread.setPriority(8);
         testThread.start();
         isrunning = true;
     }
@@ -252,7 +249,7 @@ public class MyService extends Service {
     }
     private void sleep(){
         try {
-            Thread.sleep(MenuActivity.vibSleep);
+            Thread.sleep(recDelay);
         } catch (InterruptedException e) {
             Log.e(logTag, "Thread sleep error",e);
         }
@@ -275,24 +272,6 @@ public class MyService extends Service {
             mNotificationManager.notify(0, mBuilder.build());
         }
 
-    }
-
-    private void updateUI(String statusValue){
-
-        Intent broadcastIntent = new Intent(MyService.this, MainActivity.class);
-        broadcastIntent.putExtra("status", statusValue);
-        LocalBroadcastManager.getInstance(this).sendBroadcast(broadcastIntent);
-    }
-
-    private Notification buildForegroundNotification() {
-        NotificationCompat.Builder b=new NotificationCompat.Builder(this);
-
-        b.setOngoing(true)
-                .setContentText("Vib One is running")
-                .setContentTitle("Vib One enabled")
-                .setSmallIcon(R.drawable.ic_launcher_background);
-
-        return(b.build());
     }
 
 }
