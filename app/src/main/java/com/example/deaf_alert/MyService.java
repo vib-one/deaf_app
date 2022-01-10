@@ -66,7 +66,7 @@ public class MyService extends Service {
             Log.e(logTag, "minBufferSize calculation error", e);
         }
 
-        bufferSize=5*minBufferSize;
+        bufferSize=2*minBufferSize;
         recDelay = (bufferSize * 1000) / (sampleRate);
 
         PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
@@ -174,7 +174,7 @@ public class MyService extends Service {
 
         testThread = new Thread(() -> {
             while (testThread != null && !testThread.isInterrupted()) {
-                startRecording(); //rozpoczynamy nagrywanie
+                startRecording();
                 try {
                     Thread.sleep(recDelay);
                 } catch (InterruptedException e) {
@@ -202,7 +202,6 @@ public class MyService extends Service {
             short[] buffer = new short[bufferSize];
             int bufferReadResult = 1;
             int square=0;
-            double mean=0.0;
             int temp = 0;
             if (audio != null) {
                 bufferReadResult = audio.read(buffer, 0, bufferSize);
@@ -213,11 +212,11 @@ public class MyService extends Service {
                     square += Math.pow(buffer[i], 2);
                     temp = Math.max(temp, buffer[i]);
                 }
-                mean=(square/(float)(bufferReadResult));
                 noiseValueMAX = temp;
-                //noiseValueRMS=Math.sqrt(mean);
-                //noiseValueRMSdB=10*Math.log10(noiseValueRMS);
+
+                if (noiseValueMAX>0)
                 noiseValueMAXdB=20*Math.log10(noiseValueMAX);
+                else noiseValueMAXdB=0;
             }
         } catch (Exception e) {
             Log.e(logTag, "read Audio Buffer error", e);
@@ -225,31 +224,22 @@ public class MyService extends Service {
     }
 
     private void calcAlarmValue(){
-       /* PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
-        assert powerManager != null;
-        @SuppressLint("InvalidWakeLockTag") final PowerManager.WakeLock mWakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "vib");
-*/
+
         if (noiseValueMAXdB >= referenceNoiseLeveldB) {
-            // uruchamia partial wake lock/ blokuje przejście CPU w tryb uspienia
-           // if (!mWakeLock.isHeld()) {
-           //     mWakeLock.acquire(5 * 1000L /*5 sekund*/);
-           // }
+
             stopRecording();
 
             Vibrator vibrate = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
             if (vibrate != null) {
                 vibrate.vibrate(vibDelay);
             }
-            sleep();
-            // zwalnia partial wake lock
-            //if (mWakeLock.isHeld()) {
-            //   mWakeLock.release();
-           // }
+            sleep(MenuActivity.vibSleep);
+
         }
     }
-    private void sleep(){
+    private void sleep(Integer sleepTime){
         try {
-            Thread.sleep(recDelay);
+            Thread.sleep(sleepTime);
         } catch (InterruptedException e) {
             Log.e(logTag, "Thread sleep error",e);
         }

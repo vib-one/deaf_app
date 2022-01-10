@@ -4,6 +4,10 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.BroadcastReceiver;
+import android.net.Uri;
+import android.os.Build;
+import android.os.PowerManager;
+import android.provider.Settings;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -26,12 +30,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private boolean isOn =false;
     private boolean permission=false;
     private int noiseLevel=3;
-    private double noiseLevelValueRMSdB=0;
-    private double noiseLevelValueMAXdB =0;
     private RequestPermissionHandler mRequestPermissionHandler;
 
-    public static final Integer RecordAudioRequestCode = 1;
     private SpeechRecognizer speechRecognizer;
+
+    private static final int IGNORE_BATTERY_OPTIMIZATION_REQUEST = 1002;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -54,7 +57,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         recordButton.setOnClickListener(this);
         TextView speechToText = findViewById(R.id.speechToText);
 
-        //checkStatusService();
+        PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (pm != null && !pm.isIgnoringBatteryOptimizations(getPackageName())) {
+                askIgnoreOptimization();
+            } else {
+                //Context context = getApplicationContext();
+                //Toast.makeText(context,"Wyłącz optymalizację baterii dla Vib One",Toast.LENGTH_LONG).show();
+            }
+        }
 
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
 
@@ -129,10 +140,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onResume();
 
         checkStatusService();
-        /*TextView noiseValueRMSdB=(TextView)findViewById(R.id.textView3);
-        String noiseValueRMStxt=Double.toString(noiseLevelValueRMSdB);
-        noiseValueRMSdB.setText(noiseValueRMStxt);
-*/
+
         if(isOn) {
             TextView noiseValueRMSdB = (TextView) findViewById(R.id.textView3);
             String noiseValueRMStxt = Double.toString(MyService.noiseValueLevel);
@@ -142,45 +150,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             String noiseValueMAXdBtxt = Double.toString(MyService.noiseValueMAXdB);
             noiseValueMAXdB.setText(noiseValueMAXdBtxt);
         }
-        //viewIcons();
-/*
-        ToggleButton ON_OFF_toggle = (ToggleButton) findViewById(R.id.ON_OFF_btn);
-        ON_OFF_toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    Context context = getApplicationContext();
-                    Toast.makeText(context,"vib one- uruchomiono",Toast.LENGTH_SHORT).show();
-                    //Start_Service();
-                    is_ON=true;
-                    // The toggle is enabled
 
-                } else {
-                    Stop_Service();
-                    is_ON=false;
-                    // The toggle is disabled
-                }
-            }
-        });
-        youtubeButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(MyService.isrunning){
-                    tryb1 = 2;
-                    //tryb1txt = String.valueOf(tryb1);
-                    //Context context = getApplicationContext();
-                    //Toast.makeText(context,"Tryb 2",Toast.LENGTH_SHORT).show();
-                    //checkStatusService();
-                }
-            }
-        });
-        menuButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent menuIntent = new Intent(MainActivity.this, MenuActivity.class);
-                startActivity(menuIntent);
-            }
-        });
-        */
     }
 
     @Override
@@ -197,17 +167,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void startMyService() {
 
-        //-----> metoda uruchamia MyService (usługa w tle)
         Intent serviceIntent = new Intent(MainActivity.this, MyService.class);
-        //-----> wysyła string z wartością czułości do MyService
         String tryb1txt = String.valueOf(noiseLevel);
         serviceIntent.putExtra("message", tryb1txt);
-        //-----> start działania MyService
         this.startService(serviceIntent);
         isOn = true;
     }
 
-    //metoda zatrzymuje działanie MyService
     private void stopMyService() {
         stopService(new Intent(getBaseContext(),MyService.class));
         isOn = false;
@@ -217,61 +183,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if(MyService.isrunning){
             isOn =true;
             noiseLevel =MyService.noiseValueLevel;
-            noiseLevelValueRMSdB =MyService.noiseValueRMSdB;
-            noiseLevelValueMAXdB =MyService.noiseValueMAXdB;
-
-            //onOffBtn.setBackgroundResource(R.drawable.poweron);
 
         }else{
             isOn =false;
-            //onOffBtn.setBackgroundResource(R.drawable.poweroff);
+
         }
     }
-    /*   private void viewIcons(){
-           if (tryb1==1){
-               noiseLevelButton.setBackgroundResource(R.drawable.on1);
-               youtubeButton.setBackgroundResource(R.drawable.off2);
-               btn_3.setBackgroundResource(R.drawable.off3);
-               btn_4.setBackgroundResource(R.drawable.off4);
-               btn_5.setBackgroundResource(R.drawable.off5);
-           }
-           else if (tryb1==2){
-               noiseLevelButton.setBackgroundResource(R.drawable.off1);
-               youtubeButton.setBackgroundResource(R.drawable.on2);
-               btn_3.setBackgroundResource(R.drawable.off3);
-               btn_4.setBackgroundResource(R.drawable.off4);
-               btn_5.setBackgroundResource(R.drawable.off5);
-           }
-           else if (tryb1==3){
-               noiseLevelButton.setBackgroundResource(R.drawable.off1);
-               youtubeButton.setBackgroundResource(R.drawable.off2);
-               btn_3.setBackgroundResource(R.drawable.on3);
-               btn_4.setBackgroundResource(R.drawable.off4);
-               btn_5.setBackgroundResource(R.drawable.off5);
-           }
-           else if (tryb1==4){
-               noiseLevelButton.setBackgroundResource(R.drawable.off1);
-               youtubeButton.setBackgroundResource(R.drawable.off2);
-               btn_3.setBackgroundResource(R.drawable.off3);
-               btn_4.setBackgroundResource(R.drawable.on4);
-               btn_5.setBackgroundResource(R.drawable.off5);
-           }
-           else if (tryb1==5){
-               noiseLevelButton.setBackgroundResource(R.drawable.off1);
-               youtubeButton.setBackgroundResource(R.drawable.off2);
-               btn_3.setBackgroundResource(R.drawable.off3);
-               btn_4.setBackgroundResource(R.drawable.off4);
-               btn_5.setBackgroundResource(R.drawable.on5);
-           }
-           else{
-               noiseLevelButton.setBackgroundResource(R.drawable.off1);
-               youtubeButton.setBackgroundResource(R.drawable.off2);
-               btn_3.setBackgroundResource(R.drawable.off3);
-               btn_4.setBackgroundResource(R.drawable.off4);
-               btn_5.setBackgroundResource(R.drawable.off5);
-           }
-       }
-   */
+
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -319,7 +237,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }, 123, new RequestPermissionHandler.RequestPermissionListener() {
             @Override
             public void onSuccess() {
-                Toast.makeText(MainActivity.this, "request permission success", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(MainActivity.this, "request permission success", Toast.LENGTH_SHORT).show();
                 permission=true;
             }
 
@@ -351,6 +269,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             }
         };
+    }
+
+    private void askIgnoreOptimization() {
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            Intent intent = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+            intent.setData(Uri.parse("package:" + getPackageName()));
+            startActivityForResult(intent, IGNORE_BATTERY_OPTIMIZATION_REQUEST);
+        }
     }
 }
 
